@@ -25,6 +25,7 @@ export class HereyaAwsPostgresServerlessStack extends cdk.Stack {
     const sanitizedName = this.stackName.toLowerCase().replace(/[^a-z0-9]/g, "_");
     const dbName = process.env["dbName"] || `db_${sanitizedName}`;
     const appUsername = process.env["appUsername"] || `user_${sanitizedName}`;
+    const autoDelete = process.env["autoDelete"] === "true";
 
     // Custom Resource Lambda to create database and user via Data API
     const provisionerFn = new lambda.Function(this, "DbProvisioner", {
@@ -65,6 +66,7 @@ export class HereyaAwsPostgresServerlessStack extends cdk.Stack {
         MasterSecretArn: masterSecretArn,
         DatabaseName: dbName,
         AppUsername: appUsername,
+        AutoDelete: autoDelete ? "true" : "false",
       },
     });
 
