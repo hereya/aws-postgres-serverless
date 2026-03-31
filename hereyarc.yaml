@@ -1,5 +1,5 @@
 name: hereya/aws-postgres-serverless
-version: 0.1.4
+version: 0.1.5
 description: "Creates a database and user inside an existing Aurora Serverless v2 cluster via Data API. Exports credentials, IAM policy, and connection details."
 visibility: public
 iac: cdk
