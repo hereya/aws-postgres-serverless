@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib/core";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as secrets from "aws-cdk-lib/aws-secretsmanager";
+import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as cr from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
 import * as path from "path";
@@ -103,6 +104,14 @@ export class HereyaAwsPostgresServerlessStack extends cdk.Stack {
       ],
     });
 
+    // Store secretArn in SSM so Hereya doesn't auto-resolve it as a secret value.
+    // The Lambda needs the ARN itself (to pass to Data API), not the secret content.
+    const secretArnParam = new ssm.StringParameter(this, "SecretArnParam", {
+      parameterName: `/${this.stackName}/secret-arn`,
+      stringValue: appSecret.secretArn,
+      description: "ARN of the app database user secret",
+    });
+
     // Outputs — these flow into hereyaProjectEnv for the deploy package
     new cdk.CfnOutput(this, "clusterArn", {
       value: clusterArn,
@@ -110,8 +119,8 @@ export class HereyaAwsPostgresServerlessStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, "secretArn", {
-      value: appSecret.secretArn,
-      description: "The ARN of the app user secret in Secrets Manager",
+      value: secretArnParam.parameterArn,
+      description: "SSM parameter ARN containing the app user secret ARN",
     });
 
     new cdk.CfnOutput(this, "databaseName", {
