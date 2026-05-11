@@ -27,13 +27,15 @@ export class HereyaAwsPostgresServerlessStack extends cdk.Stack {
     const appUsername = process.env["appUsername"] || `user_${sanitizedName}`;
     const autoDelete = process.env["autoDelete"] === "true";
 
-    // Custom Resource Lambda to create database and user via Data API
+    // Custom Resource Lambda to create database and user via Data API.
+    // 5-minute timeout accommodates the warm-up + retry budget the handler
+    // uses to absorb Aurora Serverless v2 pause/resume delays.
     const provisionerFn = new lambda.Function(this, "DbProvisioner", {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: "index.handler",
       code: lambda.Code.fromAsset(path.join(__dirname, "db-provisioner")),
-      memorySize: 128,
-      timeout: cdk.Duration.seconds(60),
+      memorySize: 256,
+      timeout: cdk.Duration.minutes(5),
     });
 
     // Grant the provisioner access to Data API and master secret
